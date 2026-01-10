@@ -439,11 +439,8 @@
                 </div>
 
                 <div class="form-group">
-                    <label>Groq API Key</label>
-                    <input type="password" id="api-key" placeholder="gsk_..." value="">
-                    <p style="font-size: 11px; color: var(--text-muted); margin-top: 8px;">
-                        Get your key from <a href="https://console.groq.com/keys" target="_blank"
-                            style="color: var(--accent);">Groq Console</a>
+                    <p style="font-size: 13px; color: var(--text-muted);">
+                        การตั้งค่าถูกย้ายไปที่ไฟล์ <code>.env</code> ของ Server แล้วเพื่อความปลอดภัยฮะ
                     </p>
                 </div>
 
@@ -458,7 +455,7 @@
                 </div>
 
                 <button id="save-settings" style="width: 100%; height: 44px; font-size: 14px; font-weight: 500;">
-                    Save Settings
+                    Close
                 </button>
             </div>
         </div>
@@ -509,13 +506,12 @@
 
         localStorage.setItem('chat_history', JSON.stringify(conversationHistory));
 
+        // Local Storage only for model preference (no API Key)
         let config = JSON.parse(localStorage.getItem('chat_config')) || {
-            apiKey: '',
             model: 'llama-3.1-8b-instant'
         };
 
         // Initialize UI with config
-        document.getElementById('api-key').value = config.apiKey;
         document.getElementById('model-select').value = config.model;
 
         // Settings Logic
@@ -524,15 +520,12 @@
         const saveSettings = document.getElementById('save-settings');
 
         closeSettings.onclick = () => settingsOverlay.classList.remove('active');
-        closeSettings.onclick = () => settingsOverlay.classList.remove('active');
         settingsOverlay.onclick = (e) => { if (e.target === settingsOverlay) settingsOverlay.classList.remove('active'); };
 
         saveSettings.onclick = () => {
-            config.apiKey = document.getElementById('api-key').value.trim();
             config.model = document.getElementById('model-select').value;
             localStorage.setItem('chat_config', JSON.stringify(config));
             settingsOverlay.classList.remove('active');
-            alert('บันทึกการตั้งค่าเรียบร้อยแล้วฮะ!');
         };
 
         // Secret trigger: Click logo 3 times to open settings
@@ -572,29 +565,22 @@
             showTyping(true);
 
             try {
-                if (!config.apiKey) {
-                    throw new Error("กรุณาใส่ API Key ในส่วนการตั้งค่าก่อนนะฮะ");
-                }
-
-                console.log("Sending message to Groq:", text);
+                console.log("Sending message to Local Server:", text);
                 const response = await callGroqAPI(text);
-                console.log("Received response from Groq:", response);
+                console.log("Received response from Local Server:", response);
 
                 showTyping(false);
                 appendMessage(response, 'ai');
             } catch (error) {
                 console.error("Error in handleSend:", error);
                 showTyping(false);
-                appendMessage(error.message || "เกิดข้อผิดพลาดบางอย่าง ลองใหม่อีกครั้งนะฮะ", 'ai');
-                if (!config.apiKey) settingsOverlay.classList.add('active');
+                appendMessage(error.message || "เกิดข้อผิดพลาดในการเชื่อมต่อกับ Server นะฮะ (ตรวจสอบว่ารัน Server หรือยังนะฮะ)", 'ai');
             }
         }
 
         async function callGroqAPI(userInput) {
-            const endpoint = "https://api.groq.com/openai/v1/chat/completions";
+            const endpoint = "http://localhost:3000/api/chat";
 
-            // Format context: base background + limited history
-            // Ensure every message has role and content, and remove any undefined items
             const messages = [
                 { role: "system", content: "You are 'Nong Tinnie AI', a helpful, friendly, and premium AI assistant. You speak warmly and use polite Thai particles (ฮะ/ครับ). You are developed to provide a high-end experience." },
                 ...conversationHistory
@@ -602,29 +588,29 @@
                     .map(m => ({ role: m.role, content: m.content }))
             ];
 
-            console.log("Fetching from Groq with messages:", messages);
-            const response = await fetch(endpoint, {
-                method: "POST",
-                headers: {
-                    "Authorization": `Bearer ${config.apiKey}`,
-                    "Content-Type": "application/json"
-                },
-                body: JSON.stringify({
-                    model: config.model,
-                    messages: messages,
-                    temperature: 0.7,
-                    max_tokens: 1024
-                })
-            });
-
-            if (!response.ok) {
-                const errData = await response.json();
-                console.error("Groq API Error Response:", errData);
-                throw new Error(errData.error?.message || "API Error");
+            let response;
+            try {
+                response = await fetch(endpoint, {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({
+                        model: config.model,
+                        messages: messages
+                    })
+                });
+            } catch (err) {
+                console.error("Network error:", err);
+                throw new Error("ไม่สามารถเชื่อมต่อกับ Server ได้ฮะ (ตรวจสอบว่ารัน 'npm start' หรือยังนะฮะ)");
             }
 
             const data = await response.json();
-            console.log("Groq API Success Data:", data);
+
+            if (!response.ok) {
+                throw new Error(data.error?.message || "Server Error");
+            }
+
             return data.choices[0].message.content;
         }
 
