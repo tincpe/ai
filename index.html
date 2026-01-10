@@ -1,0 +1,663 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nong Tinnie AI - Premium Chat Experience</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600&family=Inter:wght@300;400;500&display=swap"
+        rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #050508;
+            --card-bg: rgba(20, 20, 35, 0.6);
+            --primary-glow: rgba(123, 97, 255, 0.5);
+            --secondary-glow: rgba(0, 209, 255, 0.5);
+            --text-main: #ffffff;
+            --text-muted: #a0a0c0;
+            --accent: #7b61ff;
+            --accent-gradient: linear-gradient(135deg, #7b61ff 0%, #00d1ff 100%);
+            --message-user: rgba(123, 97, 255, 0.2);
+            --message-ai: rgba(255, 255, 255, 0.05);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            user-select: none;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            font-family: 'Inter', sans-serif;
+            height: 100vh;
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+        }
+
+        /* Animated Background Gradients */
+        body::before {
+            content: '';
+            position: absolute;
+            top: -10%;
+            left: -10%;
+            width: 40%;
+            height: 40%;
+            background: radial-gradient(circle, var(--primary-glow) 0%, transparent 70%);
+            filter: blur(80px);
+            z-index: -1;
+            animation: move-1 15s infinite alternate ease-in-out;
+        }
+
+        body::after {
+            content: '';
+            position: absolute;
+            bottom: -10%;
+            right: -10%;
+            width: 40%;
+            height: 40%;
+            background: radial-gradient(circle, var(--secondary-glow) 0%, transparent 70%);
+            filter: blur(80px);
+            z-index: -1;
+            animation: move-2 12s infinite alternate ease-in-out;
+        }
+
+        @keyframes move-1 {
+            from {
+                transform: translate(0, 0);
+            }
+
+            to {
+                transform: translate(20%, 20%);
+            }
+        }
+
+        @keyframes move-2 {
+            from {
+                transform: translate(0, 0);
+            }
+
+            to {
+                transform: translate(-20%, -20%);
+            }
+        }
+
+        /* Main Container */
+        .app-container {
+            width: 90%;
+            max-width: 1000px;
+            height: 85vh;
+            background: var(--card-bg);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 24px;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            animation: fade-in 0.8s ease-out;
+        }
+
+        @keyframes fade-in {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Header */
+        header {
+            padding: 24px 32px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-family: 'Outfit', sans-serif;
+            font-size: 24px;
+            font-weight: 600;
+            background: var(--accent-gradient);
+            background-clip: text;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            letter-spacing: -0.5px;
+            cursor: default;
+        }
+
+        .status {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 13px;
+            color: var(--text-muted);
+            background: rgba(255, 255, 255, 0.05);
+            padding: 6px 12px;
+            border-radius: 20px;
+        }
+
+        .status::before {
+            content: '';
+            width: 8px;
+            height: 8px;
+            background: #00ff88;
+            border-radius: 50%;
+            box-shadow: 0 0 10px #00ff88;
+        }
+
+        /* Chat Area */
+        #chat-window {
+            flex: 1;
+            padding: 32px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+            scrollbar-width: none;
+        }
+
+        #chat-window::-webkit-scrollbar {
+            display: none;
+        }
+
+        .message {
+            max-width: 80%;
+            padding: 16px 20px;
+            border-radius: 18px;
+            font-size: 15px;
+            line-height: 1.6;
+            animation: slide-up 0.4s ease-out;
+        }
+
+        @keyframes slide-up {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .message.user {
+            align-self: flex-end;
+            background: var(--message-user);
+            border: 1px solid rgba(123, 97, 255, 0.3);
+            border-bottom-right-radius: 4px;
+        }
+
+        .message.ai {
+            align-self: flex-start;
+            background: var(--message-ai);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-bottom-left-radius: 4px;
+            color: #ececf1;
+        }
+
+        /* Typing Animation */
+        .typing {
+            display: flex;
+            gap: 4px;
+            padding: 12px 16px;
+            background: var(--message-ai);
+            border-radius: 18px;
+            width: fit-content;
+            margin-bottom: 24px;
+        }
+
+        .dot {
+            width: 6px;
+            height: 6px;
+            background: var(--text-muted);
+            border-radius: 50%;
+            animation: bounce 1.4s infinite ease-in-out;
+        }
+
+        .dot:nth-child(1) {
+            animation-delay: -0.32s;
+        }
+
+        .dot:nth-child(2) {
+            animation-delay: -0.16s;
+        }
+
+        @keyframes bounce {
+
+            0%,
+            80%,
+            100% {
+                transform: scale(0);
+            }
+
+            40% {
+                transform: scale(1);
+            }
+        }
+
+        /* Input Area */
+        .input-area {
+            padding: 24px 32px;
+            display: flex;
+            gap: 16px;
+            align-items: center;
+            background: rgba(0, 0, 0, 0.2);
+            border-bottom-left-radius: 24px;
+            border-bottom-right-radius: 24px;
+        }
+
+        .input-wrapper {
+            flex: 1;
+            position: relative;
+        }
+
+        input {
+            width: 100%;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 14px;
+            padding: 14px 20px;
+            color: white;
+            font-family: inherit;
+            font-size: 15px;
+            outline: none;
+            transition: all 0.3s;
+        }
+
+        input:focus {
+            border-color: var(--accent);
+            background: rgba(255, 255, 255, 0.08);
+            box-shadow: 0 0 15px rgba(123, 97, 255, 0.2);
+        }
+
+        button {
+            background: var(--accent-gradient);
+            border: none;
+            border-radius: 14px;
+            width: 48px;
+            height: 48px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            transition: transform 0.2s, opacity 0.2s;
+        }
+
+        button:hover {
+            transform: scale(1.05);
+            opacity: 0.9;
+        }
+
+        button:active {
+            transform: scale(0.95);
+        }
+
+        button svg {
+            fill: white;
+            width: 20px;
+            height: 20px;
+        }
+
+        /* Settings Sidebar */
+        .settings-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.4);
+            backdrop-filter: blur(8px);
+            z-index: 1000;
+            display: flex;
+            justify-content: flex-end;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s;
+        }
+
+        .settings-overlay.active {
+            opacity: 1;
+            pointer-events: all;
+        }
+
+        .settings-panel {
+            width: 320px;
+            height: 100%;
+            background: #0a0a14;
+            border-left: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 40px 24px;
+            transform: translateX(100%);
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .settings-overlay.active .settings-panel {
+            transform: translateX(0);
+        }
+
+        .settings-header {
+            font-family: 'Outfit', sans-serif;
+            font-size: 20px;
+            font-weight: 600;
+            margin-bottom: 32px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .close-settings {
+            cursor: pointer;
+            color: var(--text-muted);
+            transition: color 0.2s;
+        }
+
+        .close-settings:hover {
+            color: white;
+        }
+
+        .form-group {
+            margin-bottom: 24px;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 13px;
+            color: var(--text-muted);
+            margin-bottom: 8px;
+        }
+
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            padding: 12px;
+            color: white;
+            font-family: inherit;
+            outline: none;
+        }
+
+        .settings-btn {
+            background: rgba(255, 255, 255, 0.05);
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .settings-btn:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .settings-btn svg {
+            width: 20px;
+            height: 20px;
+            fill: var(--text-muted);
+        }
+
+        /* Utility */
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="app-container">
+        <header>
+            <div class="logo" id="app-logo">Nong Tinnie AI</div>
+            <div style="display: flex; gap: 12px; align-items: center;">
+                <div class="status">Online</div>
+            </div>
+        </header>
+
+        <div class="settings-overlay" id="settings-overlay">
+            <div class="settings-panel">
+                <div class="settings-header">
+                    <span>Settings</span>
+                    <div class="close-settings" id="close-settings">✕</div>
+                </div>
+
+                <div class="form-group">
+                    <label>Groq API Key</label>
+                    <input type="password" id="api-key" placeholder="gsk_..." value="">
+                    <p style="font-size: 11px; color: var(--text-muted); margin-top: 8px;">
+                        Get your key from <a href="https://console.groq.com/keys" target="_blank"
+                            style="color: var(--accent);">Groq Console</a>
+                    </p>
+                </div>
+
+                <div class="form-group">
+                    <label>Model</label>
+                    <select id="model-select">
+                        <option value="llama-3.1-8b-instant">Llama 3.1 8B (Recommended)</option>
+                        <option value="llama-3.1-70b-versatile">Llama 3.1 70B</option>
+                        <option value="llama3-8b-8192">Llama 3 8B</option>
+                        <option value="mixtral-8x7b-32768">Mixtral 8x7B</option>
+                    </select>
+                </div>
+
+                <button id="save-settings" style="width: 100%; height: 44px; font-size: 14px; font-weight: 500;">
+                    Save Settings
+                </button>
+            </div>
+        </div>
+
+        <main id="chat-window">
+            <div class="message ai">
+                สวัสดีฮะ! ฉันคือ Nong Tinnie AI วันนี้มีอะไรให้ช่วยไหมฮะ?
+            </div>
+        </main>
+
+        <div id="typing-indicator" class="typing hidden" style="margin-left: 32px;">
+            <div class="dot"></div>
+            <div class="dot"></div>
+            <div class="dot"></div>
+        </div>
+
+        <div class="input-area">
+            <div class="input-wrapper">
+                <input type="text" id="user-input" placeholder="Type your message here..." autocomplete="off">
+            </div>
+            <button id="send-btn">
+                <svg viewBox="0 0 24 24">
+                    <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"></path>
+                </svg>
+            </button>
+        </div>
+    </div>
+
+    <script>
+        const chatWindow = document.getElementById('chat-window');
+        const userInput = document.getElementById('user-input');
+        const sendBtn = document.getElementById('send-btn');
+        const typingIndicator = document.getElementById('typing-indicator');
+
+        // Local storage for settings and history
+        let conversationHistory = JSON.parse(localStorage.getItem('chat_history')) || [];
+
+        // Data Migration: Convert old 'text' property to 'content' and 'ai' role to 'assistant'
+        conversationHistory = conversationHistory.map(msg => {
+            if (msg.text && !msg.content) {
+                return {
+                    role: msg.role === 'ai' ? 'assistant' : msg.role,
+                    content: msg.text
+                };
+            }
+            return msg;
+        }).filter(msg => msg.content); // Final safeguard
+
+        localStorage.setItem('chat_history', JSON.stringify(conversationHistory));
+
+        let config = JSON.parse(localStorage.getItem('chat_config')) || {
+            apiKey: '',
+            model: 'llama-3.1-8b-instant'
+        };
+
+        // Initialize UI with config
+        document.getElementById('api-key').value = config.apiKey;
+        document.getElementById('model-select').value = config.model;
+
+        // Settings Logic
+        const settingsOverlay = document.getElementById('settings-overlay');
+        const closeSettings = document.getElementById('close-settings');
+        const saveSettings = document.getElementById('save-settings');
+
+        closeSettings.onclick = () => settingsOverlay.classList.remove('active');
+        closeSettings.onclick = () => settingsOverlay.classList.remove('active');
+        settingsOverlay.onclick = (e) => { if (e.target === settingsOverlay) settingsOverlay.classList.remove('active'); };
+
+        saveSettings.onclick = () => {
+            config.apiKey = document.getElementById('api-key').value.trim();
+            config.model = document.getElementById('model-select').value;
+            localStorage.setItem('chat_config', JSON.stringify(config));
+            settingsOverlay.classList.remove('active');
+            alert('บันทึกการตั้งค่าเรียบร้อยแล้วฮะ!');
+        };
+
+        // Secret trigger: Click logo 3 times to open settings
+        let logoClicks = 0;
+        document.getElementById('app-logo').onclick = () => {
+            logoClicks++;
+            if (logoClicks >= 3) {
+                settingsOverlay.classList.add('active');
+                logoClicks = 0;
+            }
+            setTimeout(() => logoClicks = 0, 1000); // Reset clicks after 1s
+        };
+
+        function appendMessage(text, sender) {
+            const msgDiv = document.createElement('div');
+            msgDiv.className = `message ${sender}`;
+            msgDiv.innerText = text;
+            chatWindow.appendChild(msgDiv);
+            chatWindow.scrollTop = chatWindow.scrollHeight;
+
+            // Save to history (only actual messages, not UI ones)
+            if (sender !== 'system') {
+                conversationHistory.push({ role: sender === 'user' ? 'user' : 'assistant', content: text });
+                localStorage.setItem('chat_history', JSON.stringify(conversationHistory.slice(-20)));
+            }
+        }
+
+        async function handleSend() {
+            const text = userInput.value.trim();
+            if (!text) return;
+
+            // User Message
+            appendMessage(text, 'user');
+            userInput.value = '';
+
+            // AI Thinking logic
+            showTyping(true);
+
+            try {
+                if (!config.apiKey) {
+                    throw new Error("กรุณาใส่ API Key ในส่วนการตั้งค่าก่อนนะฮะ");
+                }
+
+                console.log("Sending message to Groq:", text);
+                const response = await callGroqAPI(text);
+                console.log("Received response from Groq:", response);
+
+                showTyping(false);
+                appendMessage(response, 'ai');
+            } catch (error) {
+                console.error("Error in handleSend:", error);
+                showTyping(false);
+                appendMessage(error.message || "เกิดข้อผิดพลาดบางอย่าง ลองใหม่อีกครั้งนะฮะ", 'ai');
+                if (!config.apiKey) settingsOverlay.classList.add('active');
+            }
+        }
+
+        async function callGroqAPI(userInput) {
+            const endpoint = "https://api.groq.com/openai/v1/chat/completions";
+
+            // Format context: base background + limited history
+            // Ensure every message has role and content, and remove any undefined items
+            const messages = [
+                { role: "system", content: "You are 'Nong Tinnie AI', a helpful, friendly, and premium AI assistant. You speak warmly and use polite Thai particles (ฮะ/ครับ). You are developed to provide a high-end experience." },
+                ...conversationHistory
+                    .filter(m => m.role && m.content)
+                    .map(m => ({ role: m.role, content: m.content }))
+            ];
+
+            console.log("Fetching from Groq with messages:", messages);
+            const response = await fetch(endpoint, {
+                method: "POST",
+                headers: {
+                    "Authorization": `Bearer ${config.apiKey}`,
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    model: config.model,
+                    messages: messages,
+                    temperature: 0.7,
+                    max_tokens: 1024
+                })
+            });
+
+            if (!response.ok) {
+                const errData = await response.json();
+                console.error("Groq API Error Response:", errData);
+                throw new Error(errData.error?.message || "API Error");
+            }
+
+            const data = await response.json();
+            console.log("Groq API Success Data:", data);
+            return data.choices[0].message.content;
+        }
+
+
+        function showTyping(show) {
+            if (show) {
+                typingIndicator.classList.remove('hidden');
+                chatWindow.scrollTop = chatWindow.scrollHeight;
+            } else {
+                typingIndicator.classList.add('hidden');
+            }
+        }
+
+        sendBtn.addEventListener('click', handleSend);
+        userInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                e.preventDefault(); // Prevent accidental newlines or form submissions
+                handleSend();
+            }
+        });
+
+        // Start fresh on every load (do not load history into UI)
+        window.onload = () => {
+            // Clear history for a truly fresh start each time
+            conversationHistory = [];
+            localStorage.removeItem('chat_history');
+
+            // Just ensure the window is scrolled to the top/initial message
+            chatWindow.scrollTop = 0;
+            console.log("Started a fresh conversation session.");
+        };
+
+    </script>
+</body>
+
+</html>
