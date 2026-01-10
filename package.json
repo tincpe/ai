@@ -1,7 +1,7 @@
 {
-  "name": "ai-chatbot",
+  "name": "nexus-ai",
   "version": "1.0.0",
-  "description": "Secure AI Chatbot with Groq Backend",
+  "description": "Secure AI Chatbot with Nexus Branding",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",

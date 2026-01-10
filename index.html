@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Nong Tinnie AI - Premium Chat Experience</title>
+    <title>Nexus AI - Premium Chatbot Experience</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link
@@ -425,7 +425,7 @@
 
     <div class="app-container">
         <header>
-            <div class="logo" id="app-logo">Nong Tinnie AI</div>
+            <div class="logo" id="app-logo">Nexus AI</div>
             <div style="display: flex; gap: 12px; align-items: center;">
                 <div class="status">Online</div>
             </div>
@@ -440,7 +440,7 @@
 
                 <div class="form-group">
                     <p style="font-size: 13px; color: var(--text-muted);">
-                        การตั้งค่าถูกย้ายไปที่ไฟล์ <code>.env</code> ของ Server แล้วเพื่อความปลอดภัยฮะ
+                        Settings have been moved to the server's <code>.env</code> file for security.
                     </p>
                 </div>
 
@@ -448,7 +448,7 @@
                     <label>Model</label>
                     <select id="model-select">
                         <option value="llama-3.1-8b-instant">Llama 3.1 8B (Recommended)</option>
-                        <option value="llama-3.1-70b-versatile">Llama 3.1 70B</option>
+                        <option value="llama-3.1-70b-versatile">Llama 3.1 70B (Slower/Smarter)</option>
                         <option value="llama3-8b-8192">Llama 3 8B</option>
                         <option value="mixtral-8x7b-32768">Mixtral 8x7B</option>
                     </select>
@@ -461,9 +461,7 @@
         </div>
 
         <main id="chat-window">
-            <div class="message ai">
-                สวัสดีฮะ! ฉันคือ Nong Tinnie AI วันนี้มีอะไรให้ช่วยไหมฮะ?
-            </div>
+            Hello! I'm Nexus AI. How can I help you today?
         </main>
 
         <div id="typing-indicator" class="typing hidden" style="margin-left: 32px;">
@@ -574,7 +572,7 @@
             } catch (error) {
                 console.error("Error in handleSend:", error);
                 showTyping(false);
-                appendMessage(error.message || "เกิดข้อผิดพลาดในการเชื่อมต่อกับ Server นะฮะ (ตรวจสอบว่ารัน Server หรือยังนะฮะ)", 'ai');
+                appendMessage(error.message || "Something went wrong. Please try again (Check if Server is running).", 'ai');
             }
         }
 
@@ -582,7 +580,7 @@
             const endpoint = "http://localhost:3000/api/chat";
 
             const messages = [
-                { role: "system", content: "You are 'Nong Tinnie AI', a helpful, friendly, and premium AI assistant. You speak warmly and use polite Thai particles (ฮะ/ครับ). You are developed to provide a high-end experience." },
+                { role: "system", content: "You are 'Nexus AI', a helpful, friendly, and premium AI assistant. You speak warmly and professionally. You are developed to provide a high-end experience in English." },
                 ...conversationHistory
                     .filter(m => m.role && m.content)
                     .map(m => ({ role: m.role, content: m.content }))
@@ -602,7 +600,7 @@
                 });
             } catch (err) {
                 console.error("Network error:", err);
-                throw new Error("ไม่สามารถเชื่อมต่อกับ Server ได้ฮะ (ตรวจสอบว่ารัน 'npm start' หรือยังนะฮะ)");
+                throw new Error("Unable to connect to the Server. (Please check if 'npm start' is running)");
             }
 
             const data = await response.json();
