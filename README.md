@@ -34,6 +34,3 @@ A premium, glassmorphic AI chatbot interface with a secure Node.js backend. This
    npm start
    ```
 2. Open `index.html` in your web browser.
-
-## Security Warning
-**DO NOT** upload your `.env` file to GitHub. It is already added to `.gitignore` to protect your credentials.
