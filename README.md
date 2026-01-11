@@ -1,4 +1,4 @@
-# Nexus AI - Secure AI Chatbot
+# Secure AI Chatbot
 
 A premium, glassmorphic AI chatbot interface with a secure Node.js backend. This setup ensures that your API keys are never exposed to the client-side.
 
@@ -34,3 +34,4 @@ A premium, glassmorphic AI chatbot interface with a secure Node.js backend. This
    npm start
    ```
 2. Open `index.html` in your web browser.
+
